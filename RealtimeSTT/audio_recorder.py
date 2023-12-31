@@ -115,6 +115,7 @@ class AudioToTextRecorder:
 
                  # Wake word parameters
                  wakeword_backend: str = "pvporcupine",
+                 oww_model_path: str = None,
                  wake_words: str = "",
                  wake_words_sensitivity: float = INIT_WAKE_WORDS_SENSITIVITY,
                  wake_word_activation_delay: float = (
@@ -214,6 +215,7 @@ class AudioToTextRecorder:
         - on_vad_detect_stop (callable, default=None): Callback function to be
             called when the system stops listening for voice activity.
         - wakeword_backend (str, default="pvporcupine"): TODO
+        - oww_model_path (str, default=None): Path to an openwakeword model.
         - wake_words (str, default=""): Comma-separated string of wake words to
             initiate recording. Supported wake words include:
             'alexa', 'americano', 'blueberry', 'bumblebee', 'computer',
@@ -421,9 +423,15 @@ class AudioToTextRecorder:
 
                 case 'openwakeword':
                     try:
-                        self.owwModel = Model(
-                            wakeword_models=self.wake_words_list, 
-                            inference_framework="onnx")
+                        if oww_model_path:
+                            self.owwModel = Model(
+                                wakeword_models=[oww_model_path], 
+                                inference_framework="onnx")
+                            logging.info("Successfully loaded wakeword model: {}".format(oww_model_path))
+                        else:
+                            self.owwModel = Model(
+                                wakeword_models=self.wake_words_list, 
+                                inference_framework="onnx")
                     except Exception as e:
                         logging.exception("Error initializing openwakeword "
                                         f"wake word detection engine: {e}"
